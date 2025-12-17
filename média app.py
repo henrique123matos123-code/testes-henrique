@@ -1,52 +1,83 @@
 import streamlit as st
 
-# Configuração da página
-st.set_page_config(page_title="Calculadora de Notas", page_icon="🎓")
+# 1. Configuração da Página (Título na aba e ícone)
+st.set_page_config(
+    page_title="Calculadora UNAMA",
+    page_icon="⚖️",  # Ícone de balança (Direito)
+    layout="centered"
+)
 
-st.title("🎓 Calculadora de Notas")
-st.write("Baseada nas regras de aprovação (Média 7.0 / Corte 8.0 na soma)")
+# --- BARRA LATERAL (MENU) ---
+with st.sidebar:
+    st.header("Sobre")
+    st.write("Esta calculadora segue o sistema de avaliação oficial (Regra dos 8 pontos de corte).")
+    st.markdown("---")
+    # AQUI: Coloque seu nome abaixo
+    st.write("👨‍💻 **Desenvolvido por:**")
+    st.write("Henrique Brito") 
+    st.write("Estudante de Direito")
 
-st.divider() # Linha divisória
+# --- CABEÇALHO COM LOGO ---
+# Tenta usar uma logo da internet. Se o link quebrar um dia, ele apenas ignora.
+try:
+    # Link público da logo da UNAMA ou Grupo Ser
+    st.image("https://upload.wikimedia.org/wikipedia/commons/e/e6/Marca_Unama_2016_v_pos.png", width=200)
+except:
+    st.header("UNAMA")
 
-# 1. Entrada de dados (usamos number_input em vez de input)
-col1, col2 = st.columns(2) # Cria duas colunas para ficar bonito visualmente
+# Título colorido (Verde estilo UNAMA)
+st.markdown("<h1 style='color: #006633;'>Calculadora de Notas</h1>", unsafe_allow_html=True)
+st.write("Insira suas notas abaixo para verificar sua situação.")
+
+st.divider()
+
+# --- ENTRADA DE DADOS ---
+col1, col2 = st.columns(2)
 
 with col1:
-    nota1 = st.number_input("Nota da 1ª Avaliação", min_value=0.0, max_value=10.0, step=0.1)
+    st.markdown("#### 1ª Avaliação")
+    nota1 = st.number_input("Nota AV1", min_value=0.0, max_value=10.0, step=0.1, key="n1")
 
 with col2:
-    nota2 = st.number_input("Nota da 2ª Avaliação", min_value=0.0, max_value=10.0, step=0.1)
+    st.markdown("#### 2ª Avaliação")
+    nota2 = st.number_input("Nota AV2", min_value=0.0, max_value=10.0, step=0.1, key="n2")
 
-# Botão para calcular
-if st.button("Calcular Resultado"):
+# --- CÁLCULOS ---
+if st.button("Calcular Minha Situação", type="primary"):
     
-    # 2. Cálculos
     soma = nota1 + nota2
     media = soma / 2
     
-    # Mostra os resultados matemáticos
-    st.info(f"📊 **Soma:** {soma:.1f} | **Média:** {media:.1f}")
+    st.markdown("---")
     
-    # 3. Regras de Negócio (A mesma lógica anterior)
+    # Mostrador de métricas grande
+    c_soma, c_media = st.columns(2)
+    c_soma.metric("Soma Total", f"{soma:.1f}")
+    c_media.metric("Média Semestral", f"{media:.1f}")
     
-    # CASO 1: Reprovação Automática pela Soma
+    # --- REGRAS DE NEGÓCIO ---
+    
+    # 1. Reprovação Direta (Soma < 8)
     if soma < 8.0:
-        st.error("❌ **REPROVADO AUTOMATICAMENTE**")
-        st.write(f"A soma das notas ({soma:.1f}) é inferior a 8.0.")
-        st.warning("Você **não** tem direito a fazer a prova final.")
+        st.error("❌ **REPROVADO POR NOTA (CORTE)**")
+        st.write(f"Sua soma foi **{soma:.1f}**. A regra exige soma mínima de **8.0** para ir à final.")
         
-    # CASO 2: Aprovado Direto
+    # 2. Aprovado Direto (Média >= 7)
     elif media >= 7.0:
-        st.success("✅ **APROVADO DIRETO!**")
-        st.balloons() # Solta balões na tela
+        st.success("✅ **APROVADO DIRETO! PARABÉNS!**")
+        st.balloons()
         
-    # CASO 3: Prova Final
+    # 3. Prova Final
     else:
-        st.warning("⚠️ **EM PROVA FINAL**")
-        
-        # Cálculo: 10 - média
+        st.warning("⚠️ **VOCÊ ESTÁ NA PROVA FINAL**")
         nota_necessaria = 10 - media
-        st.markdown(f"### Você precisa tirar na Final: **{nota_necessaria:.1f}**")
         
-        # Explicação visual da conta
-        st.caption(f"Cálculo: 10 - {media:.1f} (Sua média) = {nota_necessaria:.1f}")
+        st.markdown(f"""
+        ### Precisa tirar na Final: <span style='color:red'>{nota_necessaria:.1f}</span>
+        """, unsafe_allow_html=True)
+        
+        st.info(f"Cálculo da faculdade: 10 - {media:.1f} (Média) = {nota_necessaria:.1f}")
+
+# Rodapé simples
+st.markdown("---")
+st.caption("Ferramenta não oficial para auxílio estudantil.")
