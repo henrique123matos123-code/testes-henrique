@@ -21,7 +21,7 @@ with st.sidebar:
 # Tenta usar uma logo da internet. Se o link quebrar um dia, ele apenas ignora.
 try:
     # Link público da logo da UNAMA ou Grupo Ser
-    st.image("https://upload.wikimedia.org/wikipedia/commons/e/e6/Marca_Unama_2016_v_pos.png", width=200)
+    st.image("https://logo.unama.br/img/png/unama.png", width=200)
 except:
     st.header("UNAMA")
 
@@ -81,3 +81,4 @@ if st.button("Calcular Minha Situação", type="primary"):
 # Rodapé simples
 st.markdown("---")
 st.caption("Ferramenta não oficial para auxílio estudantil.")
+
