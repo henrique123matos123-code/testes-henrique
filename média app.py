@@ -1,84 +1,101 @@
 import streamlit as st
 
-# 1. Configuração da Página (Título na aba e ícone)
+# 1. Configuração da Página
 st.set_page_config(
     page_title="Calculadora UNAMA",
-    page_icon="⚖️",  # Ícone de balança (Direito)
+    page_icon="⚖️",
     layout="centered"
 )
 
-# --- BARRA LATERAL (MENU) ---
+# --- BARRA LATERAL ---
 with st.sidebar:
     st.header("Sobre")
-    st.write("Esta calculadora segue o sistema de avaliação oficial (Regra dos 8 pontos de corte).")
+    st.write("Calculadora acadêmica não oficial baseada nas regras de avaliação (Média 7.0 / Corte Soma 8.0).")
     st.markdown("---")
-    # AQUI: Coloque seu nome abaixo
     st.write("👨‍💻 **Desenvolvido por:**")
     st.write("Henrique Brito") 
     st.write("Estudante de Direito")
+    st.markdown("---")
+    st.info("Dica: Use a aba 'Quanto preciso?' para planejar sua AV2.")
 
-# --- CABEÇALHO COM LOGO ---
-# Tenta usar uma logo da internet. Se o link quebrar um dia, ele apenas ignora.
+# --- CABEÇALHO ---
 try:
-    # Link público da logo da UNAMA ou Grupo Ser
     st.image("https://logo.unama.br/img/png/unama.png", width=200)
 except:
     st.header("UNAMA")
 
-# Título colorido (Verde estilo UNAMA)
 st.markdown("<h1 style='color: #006633;'>Calculadora de Notas</h1>", unsafe_allow_html=True)
-st.write("Insira suas notas abaixo para verificar sua situação.")
 
-st.divider()
+# --- CRIAÇÃO DAS ABAS ---
+tab1, tab2 = st.tabs(["🧮 Calcular Minha Média", "🔮 Quanto preciso na AV2?"])
 
-# --- ENTRADA DE DADOS ---
-col1, col2 = st.columns(2)
+# === ABA 1: CALCULADORA PADRÃO (A que já existia) ===
+with tab1:
+    st.write("Já tem as duas notas? Veja sua situação final.")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        t1_nota1 = st.number_input("Nota da 1ª Avaliação", 0.0, 10.0, step=0.1, key="t1_n1")
+    with col2:
+        t1_nota2 = st.number_input("Nota da 2ª Avaliação", 0.0, 10.0, step=0.1, key="t1_n2")
 
-with col1:
-    st.markdown("#### 1ª Avaliação")
-    nota1 = st.number_input("Nota AV1", min_value=0.0, max_value=10.0, step=0.1, key="n1")
-
-with col2:
-    st.markdown("#### 2ª Avaliação")
-    nota2 = st.number_input("Nota AV2", min_value=0.0, max_value=10.0, step=0.1, key="n2")
-
-# --- CÁLCULOS ---
-if st.button("Calcular Minha Situação", type="primary"):
-    
-    soma = nota1 + nota2
-    media = soma / 2
-    
-    st.markdown("---")
-    
-    # Mostrador de métricas grande
-    c_soma, c_media = st.columns(2)
-    c_soma.metric("Soma Total", f"{soma:.1f}")
-    c_media.metric("Média Semestral", f"{media:.1f}")
-    
-    # --- REGRAS DE NEGÓCIO ---
-    
-    # 1. Reprovação Direta (Soma < 8)
-    if soma < 8.0:
-        st.error("❌ **REPROVADO POR NOTA (CORTE)**")
-        st.write(f"Sua soma foi **{soma:.1f}**. A regra exige soma mínima de **8.0** para ir à final.")
+    if st.button("Calcular Resultado", type="primary", key="btn_calc"):
+        soma = t1_nota1 + t1_nota2
+        media = soma / 2
         
-    # 2. Aprovado Direto (Média >= 7)
-    elif media >= 7.0:
-        st.success("✅ **APROVADO DIRETO! PARABÉNS!**")
-        st.balloons()
+        st.markdown("---")
+        c_soma, c_media = st.columns(2)
+        c_soma.metric("Soma Total", f"{soma:.1f}")
+        c_media.metric("Média Semestral", f"{media:.1f}")
         
-    # 3. Prova Final
-    else:
-        st.warning("⚠️ **VOCÊ ESTÁ NA PROVA FINAL**")
-        nota_necessaria = 10 - media
-        
-        st.markdown(f"""
-        ### Precisa tirar na Final: <span style='color:red'>{nota_necessaria:.1f}</span>
-        """, unsafe_allow_html=True)
-        
-        st.info(f"Cálculo da faculdade: 10 - {media:.1f} (Média) = {nota_necessaria:.1f}")
+        if soma < 8.0:
+            st.error("❌ **REPROVADO POR NOTA** (Soma < 8.0)")
+            st.caption("Você não atingiu a pontuação mínima para ir à final.")
+        elif media >= 7.0:
+            st.success("✅ **APROVADO DIRETO!**")
+            st.balloons()
+        else:
+            st.warning("⚠️ **PROVA FINAL**")
+            nec_final = 10 - media
+            st.markdown(f"Você precisa de **{nec_final:.1f}** na prova final para passar.")
 
-# Rodapé simples
+# === ABA 2: PREVISÃO (NOVIDADE) ===
+with tab2:
+    st.write("Fez a 1ª prova e quer saber o alvo para a 2ª?")
+    
+    t2_nota1 = st.number_input("Quanto você tirou na 1ª Avaliação?", 0.0, 10.0, step=0.1, key="t2_n1")
+    
+    if st.button("Simular Cenários", key="btn_sim"):
+        st.markdown("---")
+        
+        # Meta 1: Não reprovar direto (Soma deve ser 8.0)
+        # n1 + n2 = 8  -> n2 = 8 - n1
+        meta_corte = 8.0 - t2_nota1
+        if meta_corte < 0: meta_corte = 0.0 # Se já tirou 8 na primeira, precisa de 0
+        
+        # Meta 2: Passar direto (Média deve ser 7.0, ou seja, Soma 14.0)
+        # n1 + n2 = 14 -> n2 = 14 - n1
+        meta_aprovacao = 14.0 - t2_nota1
+        
+        # ANÁLISE DOS CENÁRIOS
+        
+        # Cenário A: Impossível passar direto (precisaria de mais de 10)
+        if meta_aprovacao > 10.0:
+            st.warning(f"⚠️ **Atenção:** Com a nota {t2_nota1} na primeira prova, matematicamente **não é possível passar direto**, pois você precisaria de {meta_aprovacao:.1f} na segunda prova.")
+            st.info(f"🎯 Seu foco agora é garantir a Final. Para não reprovar direto, tire pelo menos **{meta_corte:.1f}**.")
+            
+        # Cenário B: Possível passar direto
+        else:
+            st.success("✅ Ainda é possível passar direto!")
+            col_a, col_b = st.columns(2)
+            
+            with col_a:
+                st.metric("Para Passar Direto", f"{meta_aprovacao:.1f}", delta="Meta Ouro")
+                st.caption("Se tirar isso, está de férias.")
+                
+            with col_b:
+                st.metric("Para ir pra Final", f"{meta_corte:.1f}", delta="Meta Mínima", delta_color="off")
+                st.caption("Mínimo para não reprovar direto.")
+
 st.markdown("---")
-st.caption("Ferramenta não oficial para auxílio estudantil.")
-
+st.caption("Ferramenta desenvolvida para fins acadêmicos.")
